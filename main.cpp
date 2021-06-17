@@ -35,6 +35,7 @@ public:
 	list<ChainSeq> chains;
 	double num_of_cuts_action;
 	double num_of_link_action;
+	bool result_complete;
 
 	bool operator == (const Result& s) const { 
 		return num_of_cuts_action + num_of_link_action == s.num_of_cuts_action + s.num_of_link_action; 
@@ -61,11 +62,13 @@ public:
 	Result() {
 		num_of_cuts_action = numeric_limits<double>::infinity();
 		num_of_link_action = numeric_limits<double>::infinity();
+		result_complete = false;
 	};
-	Result(list<ChainSeq> ch_seq, int noca, int nola) {
+	Result(list<ChainSeq> ch_seq, int noca, int nola, bool rc) {
 		chains = ch_seq;
 		num_of_cuts_action = noca;
 		num_of_link_action = nola;
+		result_complete = rc;
 	}
 
 	int total_cost() {
@@ -85,6 +88,8 @@ public:
 
 		res1.num_of_cuts_action += res2.num_of_cuts_action;
 		res1.num_of_link_action += res2.num_of_link_action;
+
+		res1.result_complete = res2.result_complete;
 
 		return res1;
 	}
@@ -136,6 +141,8 @@ Result divide_and_conquer(list<ChainSeq> entries, ChainSeq goal, bool _first_rou
 				temp_res.num_of_cuts_action ++;
 			}
 
+			temp_res.result_complete = true;
+
 			if (final_res > temp_res || final_res.chains.empty()) { final_res = temp_res; }
 		}
 
@@ -163,7 +170,7 @@ Result divide_and_conquer(list<ChainSeq> entries, ChainSeq goal, bool _first_rou
 
 			// cout << "\nsssss " << (!entries.empty() && (final_res > temp_res || final_res.chains.empty())) << " sssss\n";
 
-			if (!entries.empty() && (final_res > temp_res || final_res.chains.empty())) { final_res = temp_res; }
+			if (temp_res.result_complete && (final_res > temp_res || final_res.chains.empty())) { final_res = temp_res; }
 		} 
 		
 		else {
@@ -189,6 +196,8 @@ Result divide_and_conquer(list<ChainSeq> entries, ChainSeq goal, bool _first_rou
 				temp_res.num_of_cuts_action ++;
 			}
 
+			temp_res.result_complete = true;
+
 			if (final_res > temp_res || final_res.chains.empty()) { final_res = temp_res; }
 		}
 		
@@ -203,17 +212,17 @@ int main() {
 
 	list<ChainSeq> entries;
 
-	ChainSeq ch1 = ChainSeq(8 , 1);
-	ChainSeq ch2 = ChainSeq(12, 0);
-	ChainSeq ch3 = ChainSeq(8 , 1);
 	ChainSeq ch4 = ChainSeq(6 , 0);
+	ChainSeq ch1 = ChainSeq(8 , 1);
+	ChainSeq ch3 = ChainSeq(8 , 1);
+	ChainSeq ch2 = ChainSeq(12, 0);
 
 	entries.push_back(ch1);
 	entries.push_back(ch2);
 	entries.push_back(ch3);
 	entries.push_back(ch4);
 
-	ChainSeq goal(21, 0);
+	ChainSeq goal(3, 0);
 
 	Result result = divide_and_conquer(entries, goal);
 
