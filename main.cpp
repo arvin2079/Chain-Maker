@@ -117,7 +117,7 @@ Result divide_and_conquer(list<ChainSeq> entries, ChainSeq goal, bool _first_rou
 
 		cout << "goal___________length: " << goal.length << "\n";
 		cout << "selected_entry_length: " << selected_entry.length << ", " << selected_entry.is_circular << "\n";
-		cout << "final_____________res: cuts: " << final_res.num_of_cuts_action << " links: " << final_res.num_of_link_action << "\n\n";
+		cout << "final_____________res: [cuts= " << final_res.num_of_cuts_action << ", links= " << final_res.num_of_link_action << "]\n\n";
 
 		if (selected_goal.length == selected_entry.length) {
 			cout << "\nfirst function\n";
@@ -159,11 +159,11 @@ Result divide_and_conquer(list<ChainSeq> entries, ChainSeq goal, bool _first_rou
 				temp_res.num_of_cuts_action ++;
 			}
 
-			Result next_res = divide_and_conquer(entries, next_goal, _first_round);
+			temp_res = temp_res.merge_results(temp_res, divide_and_conquer(entries, next_goal, _first_round));
 
-			temp_res = temp_res.merge_results(temp_res, next_res);
+			// cout << "\nsssss " << (!entries.empty() && (final_res > temp_res || final_res.chains.empty())) << " sssss\n";
 
-			if (final_res > temp_res || final_res.chains.empty()) { final_res = temp_res; }
+			if (!entries.empty() && (final_res > temp_res || final_res.chains.empty())) { final_res = temp_res; }
 		} 
 		
 		else {
@@ -213,22 +213,14 @@ int main() {
 	entries.push_back(ch3);
 	entries.push_back(ch4);
 
-	ChainSeq goal(13, 0);
+	ChainSeq goal(21, 0);
 
 	Result result = divide_and_conquer(entries, goal);
 
-	cout << "result chains length : " << result.chains.size() << " | result cost : " << result.total_cost();
+	cout << "result chains length: " << result.chains.size() << " | result links num: " << result.num_of_link_action << " | result cuts num: " << result.num_of_cuts_action << "\n";
+	for (auto const& i : result.chains) {
+    	cout << "(" << i.length << ", " << i.is_circular << ")\n";
+	}
 	
 	return 0;
-
-	// srand(time(NULL));
-	// for (int i=0 ; i < 5 ; i++) {
-	// 	entries.push_front(ChainSeq(rand() % 15 + 1, rand() % 2));
-	// }
-
-	// entries.remove(ch2);
-
-	// for (auto const& i : entries) {
-	// 	cout << i.length << "\t" << i.is_circular << "\n";
-	// }
 }
