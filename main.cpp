@@ -43,11 +43,19 @@ public:
 	bool operator != (const Result& s) const { return !operator==(s); }
 
 	bool operator < (const Result& s) const { 
-		return num_of_cuts_action + num_of_link_action < s.num_of_cuts_action + s.num_of_link_action; 
+		double noc = (num_of_cuts_action == numeric_limits<double>::infinity()) ? 0 : num_of_cuts_action;
+		double nol = (num_of_link_action == numeric_limits<double>::infinity()) ? 0 : num_of_link_action;
+		double snoc = (s.num_of_cuts_action == numeric_limits<double>::infinity()) ? 0 : s.num_of_cuts_action;
+		double snol = (s.num_of_link_action == numeric_limits<double>::infinity()) ? 0 : s.num_of_link_action;
+		return noc + nol < snoc + snol; 
 	}
 
 	bool operator > (const Result& s) const { 
-		return num_of_cuts_action + num_of_link_action > s.num_of_cuts_action + s.num_of_link_action; 
+		double noc = (num_of_cuts_action == numeric_limits<double>::infinity()) ? 0 : num_of_cuts_action;
+		double nol = (num_of_link_action == numeric_limits<double>::infinity()) ? 0 : num_of_link_action;
+		double snoc = (s.num_of_cuts_action == numeric_limits<double>::infinity()) ? 0 : s.num_of_cuts_action;
+		double snol = (s.num_of_link_action == numeric_limits<double>::infinity()) ? 0 : s.num_of_link_action;
+		return noc + nol > snoc + snol;
 	}
 	
 	Result() {
@@ -69,15 +77,22 @@ public:
 
 	Result merge_results(Result res1, Result res2) {
 		res1.chains.splice(res1.chains.end(), res2.chains);
+
+		res1.num_of_cuts_action = (res1.num_of_cuts_action == numeric_limits<double>::infinity()) ? 0 : res1.num_of_cuts_action;
+		res1.num_of_link_action = (res1.num_of_link_action == numeric_limits<double>::infinity()) ? 0 : res1.num_of_link_action;
+		res2.num_of_cuts_action = (res2.num_of_cuts_action == numeric_limits<double>::infinity()) ? 0 : res2.num_of_cuts_action;
+		res2.num_of_link_action = (res2.num_of_link_action == numeric_limits<double>::infinity()) ? 0 : res2.num_of_link_action;
+
 		res1.num_of_cuts_action += res2.num_of_cuts_action;
 		res1.num_of_link_action += res2.num_of_link_action;
+
+		return res1;
 	}
 };
 
 
 // algorithm function
 Result divide_and_conquer(list<ChainSeq> entries, ChainSeq goal, bool _first_round = true) {
-	
 	if (_first_round) {
 		Result r;
 		for (auto const& entry : entries) {
@@ -93,33 +108,39 @@ Result divide_and_conquer(list<ChainSeq> entries, ChainSeq goal, bool _first_rou
 	goal.is_circular = false;
 
 	_first_round = false;
-
-	for (auto const& entry : entries) {
-		cout << entry.is_circular << "\n";
+	// cout << "in divede and conquer!";
+	// for (auto const& entry : entries) {
+	while (!entries.empty()) {
 		ChainSeq selected_goal = goal;
-		ChainSeq selected_entry = entry;
+		ChainSeq selected_entry = entries.back();
+		entries.pop_back();
 
-		entries.remove(entry);
+		cout << "goal___________length: " << goal.length << "\n";
+		cout << "selected_entry_length: " << selected_entry.length << ", " << selected_entry.is_circular << "\n";
+		cout << "final_____________res: cuts: " << final_res.num_of_cuts_action << " links: " << final_res.num_of_link_action << "\n\n";
 
 		if (selected_goal.length == selected_entry.length) {
+			cout << "\nfirst function\n";
 			Result temp_res;
 			temp_res.chains.push_back(selected_entry);
 
-			if (temp_res.num_of_link_action == numeric_limits<double>::infinity()) {
-				temp_res.num_of_link_action = 1;
-			} else {
-				temp_res.num_of_link_action ++;
-			} 
+			// if (temp_res.num_of_link_action == numeric_limits<double>::infinity()) {
+			// 	temp_res.num_of_link_action = 1;
+			// } else {
+			// 	temp_res.num_of_link_action ++;
+			// } 
+
 			if (selected_entry.is_circular && temp_res.num_of_cuts_action == numeric_limits<double>::infinity()) { 
 				temp_res.num_of_cuts_action = 1; 
 			} else if (selected_entry.is_circular) {
 				temp_res.num_of_cuts_action ++;
 			}
 
-			if (final_res < temp_res) { final_res = temp_res; }
+			if (final_res > temp_res || final_res.chains.empty()) { final_res = temp_res; }
 		}
 
 		else if (selected_goal.length > selected_entry.length) {
+			cout << "\nsecond function\n";
 			Result temp_res;
 			temp_res.chains.push_back(selected_entry);
 
@@ -131,34 +152,46 @@ Result divide_and_conquer(list<ChainSeq> entries, ChainSeq goal, bool _first_rou
 			} else {
 				temp_res.num_of_link_action ++;
 			} 
+
 			if (selected_entry.is_circular && temp_res.num_of_cuts_action == numeric_limits<double>::infinity()) { 
 				temp_res.num_of_cuts_action = 1; 
 			} else if (selected_entry.is_circular) {
 				temp_res.num_of_cuts_action ++;
 			}
 
-			temp_res.merge_results(temp_res, divide_and_conquer(entries, next_goal, _first_round));
+			Result next_res = divide_and_conquer(entries, next_goal, _first_round);
+
+			temp_res = temp_res.merge_results(temp_res, next_res);
+
+			if (final_res > temp_res || final_res.chains.empty()) { final_res = temp_res; }
 		} 
 		
 		else {
+			cout << "\nthird function\n\n";
 			Result temp_res;
 			temp_res.chains.push_back(selected_entry);
 
-			if (temp_res.num_of_link_action == numeric_limits<double>::infinity()) {
-				temp_res.num_of_link_action = 1;
+			// if (temp_res.num_of_link_action == numeric_limits<double>::infinity()) {
+			// 	temp_res.num_of_link_action = 1;
+			// } else {
+			// 	temp_res.num_of_link_action ++;
+			// } 
+
+			if (temp_res.num_of_cuts_action == numeric_limits<double>::infinity()) {
+				temp_res.num_of_cuts_action = 1;
 			} else {
-				temp_res.num_of_link_action ++;
+				temp_res.num_of_cuts_action ++;
 			} 
+
 			if (selected_entry.is_circular && temp_res.num_of_cuts_action == numeric_limits<double>::infinity()) { 
 				temp_res.num_of_cuts_action = 1; 
 			} else if (selected_entry.is_circular) {
 				temp_res.num_of_cuts_action ++;
 			}
 
-			if (selected_entry.is_circular) { temp_res.num_of_cuts_action ++; }
-			if (final_res < temp_res) { final_res = temp_res; }
+			if (final_res > temp_res || final_res.chains.empty()) { final_res = temp_res; }
 		}
-
+		
 	}
 
 	return final_res;
@@ -170,17 +203,17 @@ int main() {
 
 	list<ChainSeq> entries;
 
-	ChainSeq ch1 = ChainSeq(8 , 0);
+	ChainSeq ch1 = ChainSeq(8 , 1);
 	ChainSeq ch2 = ChainSeq(12, 0);
 	ChainSeq ch3 = ChainSeq(8 , 1);
-	ChainSeq ch4 = ChainSeq(15 , 0);
+	ChainSeq ch4 = ChainSeq(6 , 0);
 
 	entries.push_back(ch1);
 	entries.push_back(ch2);
 	entries.push_back(ch3);
 	entries.push_back(ch4);
 
-	ChainSeq goal(15, 0);
+	ChainSeq goal(13, 0);
 
 	Result result = divide_and_conquer(entries, goal);
 
