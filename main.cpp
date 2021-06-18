@@ -241,6 +241,9 @@ int main() {
 	} else {
 		cout << "ERROR : the chain you are looking for can not be made by these entry chains!!";
 	}
+
+	// to wait for representation in command line
+	getchar();
 	
 	return 0;
 }
