@@ -2,7 +2,7 @@
 Chain Maker is a Algorithmic problem tasked with finding the goal chain from cutting and linking input chains in the most efficient manner. 
 - input chains can be circular or non-circular.
 - inputs of algorithm is list of entry chains which represented as `ChainSeq` object with two class attributes of `length` and `is_circular`.
-#### consider the examples bellow to understand the concept better :
+#### consider the example bellow to understand the concept better :
 ```
 // inputs (length, is_circular)
 (8,  1)
