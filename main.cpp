@@ -209,23 +209,23 @@ int main() {
 
 	// entries initialization
 	ChainSeq ch1 = ChainSeq(8 , 1);
-	ChainSeq ch2 = ChainSeq(38 , 0);
-	ChainSeq ch3 = ChainSeq(18 , 1);
-	ChainSeq ch4 = ChainSeq(9, 1);
-	ChainSeq ch5 = ChainSeq(14, 0);
-	ChainSeq ch6 = ChainSeq(2, 0);
-	ChainSeq ch7 = ChainSeq(3, 1);
+	ChainSeq ch2 = ChainSeq(12 , 0);
+	ChainSeq ch3 = ChainSeq(3 , 1);
+	// ChainSeq ch4 = ChainSeq(9, 1);
+	// ChainSeq ch5 = ChainSeq(14, 0);
+	// ChainSeq ch6 = ChainSeq(2, 0);
+	// ChainSeq ch7 = ChainSeq(3, 1);
 
 	entries.push_back(ch1);
 	entries.push_back(ch2);
 	entries.push_back(ch3);
-	entries.push_back(ch4);
-	entries.push_back(ch5);
-	entries.push_back(ch6);
-	entries.push_back(ch7);
+	// entries.push_back(ch4);
+	// entries.push_back(ch5);
+	// entries.push_back(ch6);
+	// entries.push_back(ch7);
 
 	// goal initialization
-	ChainSeq goal(69, 1);
+	ChainSeq goal(13, 1);
 
 	// running algorithm
 	Result result = DACwrapper(entries, goal);
